@@ -75,9 +75,92 @@ n = mat.numCols()  # 2
 
 # Basic Statistics
 ## Summary Statisticse
+colStats() return an instance of MultivariateStatisticalSummary, contain the column-wise max, min, mean, variance and number of nonzeros
+```python
+from pyspark.mllib.stat import Statistics
+mat = sc.parallelize(
+    [np.array([1.0, 10.0, 100.0]), np.array([2.0, 20.0, 200.0]), np.array([3.0, 30.0, 300.0])]
+)
+summary = Statistics.colStats(mat)
+print summary.mean() 
+print summary.max()
+```
+### Correlations
+calculate correction between two series. support Pearson and Spearman correction.
+```python
+from pyspark.mllib.stat import Statistics
+seriesX = sc.parallelize([1.0, 2.0, 3.0, 3.0, 5.0]) 
+seriesY = sc.parallelize([11.0, 22.0, 33.0, 33.0, 555.0])
+print "Correlation is: " + str(Statistics.corr(seriesX, seriesY, method="pearson"))
+```
+
+### Random data generation
+
+### Stratified sampling
+
+### Hypothesis testing
+
+### Streaming Significance Testing
+
+### Kernel density estimation
+
+
 
 # Classification and Regression
+## Linear Model
+### Mathematical formulation
+#### Loss functions
+* hinge loss
+* logistic loss
+* squared loss
 
+#### Regularizers
+* zero (unregularazed)
+* L2
+* L1
+* elastic net
+
+#### Optimization
+* SGD (most)
+* L-BFGS (a few)
+
+### Classification
+#### Linear Support Vector Machines
+```python
+from pyspark.mllib.classification import SVMWithSGD, SVMModel
+from pyspark.mllib.regression import LabeledPoint
+
+def parsePoint(line):
+    values = [float(x) for x in line.split(' ')]
+    return LabeledPoint(values[0], values[1:])
+
+data = sc.textFile("data/mllib/sample_svm_data.txt")
+parsedData = data.map(parsePoint)
+
+model = SVMWithSGD.train(parsedData, iterations=100)
+
+labelsAndPreds = parsedData.map(lambda p: (p.label, model.predict(p.features)))
+trainErr = labelsAndPreds.filter(lambda lp: lp[0] != lp[1]).count() / float(parsedData.count())
+print("Training Error = " + str(trainErr))
+
+model.save(sc, "target/tmp/pythonSVMWithSGDModel")
+sameModel = SVMModel.load(sc, "target/tmp/pythonSVMWithSGDModel")
+```
+#### Logistic regression
+
+### Regression
+#### Linear least squares, Lasso and ridge regression
+#### Stream linear regression
+
+### Implementation
+
+## Decision trees
+
+## Ensembles of decision trees
+
+## Naive Bayes
+
+## Isotonic regression
 
 # Collaborative Filtering
 
