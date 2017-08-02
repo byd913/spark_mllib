@@ -126,6 +126,8 @@ print "Correlation is: " + str(Statistics.corr(seriesX, seriesY, method="pearson
 
 ### Classification
 #### Linear Support Vector Machines
+hinge loss
+L2 regularization.
 ```python
 from pyspark.mllib.classification import SVMWithSGD, SVMModel
 from pyspark.mllib.regression import LabeledPoint
@@ -147,14 +149,60 @@ model.save(sc, "target/tmp/pythonSVMWithSGDModel")
 sameModel = SVMModel.load(sc, "target/tmp/pythonSVMWithSGDModel")
 ```
 #### Logistic regression
+logistic loss
 
 ### Regression
 #### Linear least squares, Lasso and ridge regression
+squared loss
+```python
+from pyspark.mllib.regression import LabeledPoint, LinearRegressionWithSGD, LinearRegressionModel
+
+def parsePoint(line):
+    values = [float(x) for x in line.replace(',', ' ').split(' ')]
+    return LabeledPoint(values[0], values[1:])
+
+data = sc.textFile("/Users/didi/soft/spark-2.1.1-bin-hadoop2.6/data/mllib/ridge-data/lpsa.data")
+parsedData = data.map(parsePoint)
+
+model = LinearRegressionWithSGD.train(parsedData, iterations=100, step=0.00000001)
+
+valuesAndPreds = parsedData.map(lambda p: (p.label, model.predict(p.features)))
+MSE = valuesAndPreds \
+    .map(lambda vp: (vp[0] - vp[1])**2) \
+    .reduce(lambda x, y: x + y) / valuesAndPreds.count()
+print("Mean Squared Error = " + str(MSE))
+```
+
 #### Stream linear regression
+support streaming linear regression use ordinary linear regression
 
 ### Implementation
+* SVMWithSGD
+* LogisticRegressionWithLBFGS
+* LogisticRegressionWithSGD
+* LinearRegressionWithSGD
+* RidgeRegressionWithSGD
+* LassoWithSGD
 
 ## Decision trees
+supports decision trees for binary and multiclass classification and for regression
+### Basic algorithm
+#### Node impurity and information gain
+#### Split Candidates
+* Continuos features
+* Categorical features
+#### Stopping rule
+* node depth is eqaul to the maxDepth trainning parameter
+* no split candidate leadds to an information gain greater than minInfoGain
+* no split candidate produces child nodes which each have at least minInstancesPerNode training instances
+### Usage tips
+### Scaling
+### Examples
+#### Classification
+#### Regression
+
+
+###
 
 ## Ensembles of decision trees
 
